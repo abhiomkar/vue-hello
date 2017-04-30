@@ -1,0 +1,107 @@
+<script src="https://unpkg.com/vue"></script>
+
+<style>
+  body {
+    font-family: Roboto;
+  }
+</style>
+
+<div id="app">
+  <h1>Book Store</h1>
+
+  <div class="book-input-form">
+    <input type="text" v-model.trim="newBookInputText" placeholder="Zero to One by Peter" @keyup.enter="addBook" />
+  </div>
+
+  <a href="#" @click="setFilter({read: null})">All</a> |
+  <a href="#" @click="setFilter({read: false})">Unread</a> |
+  <a href="#" @click="setFilter({read: true})">Read</a>
+
+  <div>Showing: {{ filteredBooksCount }} of {{ totalBooksCount }}</div>  
+
+  <div class="books-list-container">
+    <book v-bind:book="book" v-for="(book, index) in filteredBooks" v-bind:key="index"
+        v-on:remove="removeBook(index)"></book>
+  </div>
+  
+</div>
+
+<script>
+Vue.component('book', {
+  props: ['book'],
+  template: `
+    <div class="book-item">
+      <div class="book-title">{{ book.title }}</div>
+      <div class="book-author">{{ book.author }}</div>
+      <a href="#" v-on:click.prevent="$emit('remove')">Remove</a>    
+    </div>
+  `,
+});
+
+const app = new Vue({
+  el: '#app',
+  data: {
+    filters: {
+      read: null,      
+    },   
+    books: [{
+      title: 'Introduction to Algorithms',
+      author: 'Cormen',
+      read: false,
+    },
+    {
+      title: 'Clean Code',
+      author: 'Martin',
+      read: false,
+    },
+    {
+      title: 'Steve Jobs',
+      author: 'Walter',
+      read: true,
+    }],
+    newBookInputText: '',
+    buttonClassNames: '',
+  },
+  methods: {
+    addBook: function() {
+      const [title, author] = this.newBookInputText.split(' by ');
+      this.books.push({title, author});
+    },
+    removeBook: function(index) {
+      this.books.splice(index, 1);
+    },
+    setFilter: function(filterState) {
+      Object.assign(this.filters, filterState);
+    },
+    shouldBookShow: function(index) {
+      if (this.filters.read === null) {
+        return true;
+      } else {
+        console.log(this.filters.read, this.books[index].read);
+        return this.filters.read === this.books[index].read;
+      }
+    },
+  },
+  computed: {
+    totalBooksCount: function() {
+      return this.books.length;
+    },
+
+    filteredBooksCount: function() {
+      return this.filteredBooks.length;
+    },
+
+    filteredBooks: function() {
+      console.log('filteredBooks');
+      if (this.filters.read === null) {
+        return this.books;        
+      } else {
+        return this.books.filter(book => book.read === this.filters.read);
+      }
+    },
+  }
+});
+
+console.log('app.data: ', app.$books);
+
+</script>
